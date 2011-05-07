@@ -19,7 +19,7 @@ Vagrant::Config.run do |config|
 
   # Forward a port from the guest to the host, which allows for outside
   # computers to access the VM, whereas host only networking does not.
-  # config.vm.forward_port "http", 80, 8080
+  config.vm.forward_port "http", 80, 8080
 
   # Share an additional folder to the guest VM. The first argument is
   # an identifier, the second is the path on the guest to mount the
@@ -45,7 +45,9 @@ Vagrant::Config.run do |config|
   #   puppet.manifest_file  = "base.pp"
   # end
   #
-  config.vm.provision :puppet, :module_path => "puppet_modules"
+  config.vm.provision :puppet, 
+    :module_path => "puppet_modules",
+    :options => ["--templatedir=./templates/"]
 
   # Enable provisioning with chef solo, specifying a cookbooks path (relative
   # to this Vagrantfile), and adding some recipes and/or roles.

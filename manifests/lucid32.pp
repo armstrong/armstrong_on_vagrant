@@ -21,3 +21,46 @@ package { "fabric":
     source => "git://github.com/tswicegood/fabric.git",
 }
 
+package { "gunicorn":
+    provider => pip,
+    ensure => latest,
+}
+
+file {
+    "/sites":
+        ensure => directory;
+
+    "/sites/armstrong":
+        ensure => directory,
+        require => File["/sites"];
+
+    "/sites/armstrong/arm_server.py":
+        content => template("arm_server.py"),
+        ensure => file,
+        require => File["/sites/armstrong"];
+
+    "/sites/armstrong/config":
+        ensure => directory,
+        require => File["/sites/armstrong"];
+
+    "/sites/armstrong/config/__init__.py":
+        content => template("config/__init__.py"),
+        ensure => file,
+        require => File["/sites/armstrong/config"];
+
+    "/sites/armstrong/config/urls.py":
+        content => template("config/urls.py"),
+        ensure => file,
+        require => File["/sites/armstrong/config"];
+
+    "/sites/armstrong/config/development.py":
+        content => template("config/development.py"),
+        ensure => file,
+        require => File["/sites/armstrong/config"];
+}
+
+exec{ "gunicorn":
+    require => File["/sites/armstrong/config/development.py"],
+    command => "/usr/local/bin/gunicorn -D --bind=0.0.0.0:80 arm_server",
+    cwd => "/sites/armstrong";
+}
