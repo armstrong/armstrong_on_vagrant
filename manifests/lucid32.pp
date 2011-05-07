@@ -21,14 +21,21 @@ package { "fabric":
     source => "git://github.com/tswicegood/fabric.git",
 }
 
-package { "gunicorn":
+package { "django":
     provider => pip,
     ensure => latest,
 }
 
+package { "gunicorn":
+    provider => pip,
+    ensure => latest,
+    require => Package["django"],
+}
+
 file {
     "/sites":
-        ensure => directory;
+        ensure => directory,
+        require => Package["gunicorn"];
 
     "/sites/armstrong":
         ensure => directory,
