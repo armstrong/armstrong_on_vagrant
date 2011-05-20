@@ -23,7 +23,7 @@ package { "fabric":
 
 package { "django":
     provider => pip,
-    ensure => latest,
+    ensure => "1.3",
 }
 
 package { "gunicorn":
@@ -32,42 +32,53 @@ package { "gunicorn":
     require => Package["django"],
 }
 
-file {
-    "/sites":
+class wsgi_config {
+    file { "/sites":
         ensure => directory,
-        require => Package["gunicorn"];
+        require => Package["gunicorn"],
+    }
 
-    "/sites/armstrong":
+    file { "/sites/armstrong":
         ensure => directory,
-        require => File["/sites"];
+        require => File["/sites"],
+    }
 
-    "/sites/armstrong/arm_server.py":
+    file { "/sites/armstrong/arm_server.py":
         content => template("arm_server.py"),
         ensure => file,
-        require => File["/sites/armstrong"];
+        require => File["/sites/armstrong"],
+    }
 
-    "/sites/armstrong/config":
+    file { "/sites/armstrong/config":
         ensure => directory,
-        require => File["/sites/armstrong"];
+        require => File["/sites/armstrong"],
+    }
 
-    "/sites/armstrong/config/__init__.py":
+    file { "/sites/armstrong/config/__init__.py":
         content => template("config/__init__.py"),
         ensure => file,
-        require => File["/sites/armstrong/config"];
+        require => File["/sites/armstrong/config"],
+    }
 
-    "/sites/armstrong/config/urls.py":
+    file { "/sites/armstrong/config/urls.py":
         content => template("config/urls.py"),
         ensure => file,
-        require => File["/sites/armstrong/config"];
-
-    "/sites/armstrong/config/development.py":
+        require => File["/sites/armstrong/config"],
+    }
+    file { "/sites/armstrong/config/development.py":
         content => template("config/development.py"),
         ensure => file,
-        require => File["/sites/armstrong/config"];
+        require => File["/sites/armstrong/config"],
+    }
 }
 
-exec{ "gunicorn":
-    require => File["/sites/armstrong/config/development.py"],
-    command => "/usr/local/bin/gunicorn -D --bind=0.0.0.0:80 arm_server",
-    cwd => "/sites/armstrong";
+class gunicorn {
+    include wsgi_config
+
+    exec{ "gunicorn":
+        command => "/usr/local/bin/gunicorn -D --bind=0.0.0.0:80 arm_server",
+        cwd => "/sites/armstrong";
+    }
 }
+
+include gunicorn
