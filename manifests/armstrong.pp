@@ -7,76 +7,67 @@ class python {
         "python-setuptools": ensure => "latest";
         "git-core": ensure => "latest";
     }
-    exec { "easy_install pip":
+    exec { "pip":
+        command => "easy_install pip",
         path => "/usr/local/bin:/usr/bin:/bin",
         refreshonly => true,
-        require => Package["python-setuptools"],
+        require => [Package["build-essential"], Package["python-setuptools"],
+            Package["python"], Package["python-dev"], Package["git-core"]],
         subscribe => Package["python-setuptools"],
     }
 }
 class { "python": stage => "pre" }
 
-package { "fabric":
-    provider => pip,
-    source => "git://github.com/tswicegood/fabric.git",
+exec { "armstrong":
+    command => "/usr/local/bin/pip install -vvv armstrong",
+    require => Exec["pip"],
+    environment => ["LANG=en_US.UTF-8", "PWD=/tmp/vagrant-puppet/manifests", "SHLVL=1"],
+    logoutput => true,
 }
 
-package { "django":
-    provider => pip,
-    ensure => "1.3",
-}
 
-package { "gunicorn":
-    provider => pip,
-    ensure => latest,
-    require => Package["django"],
-}
-
-class wsgi_config {
+class initialize_armstrong {
     file { "/sites":
         ensure => directory,
-        require => Package["gunicorn"],
     }
 
-    file { "/sites/armstrong":
-        ensure => directory,
-        require => File["/sites"],
+    exec { "armstrong_init":
+        command => "/usr/local/bin/armstrong init armstrong",
+        cwd => "/sites",
+        require => [Package["armstrong"], File["/sites"]],
     }
 
-    file { "/sites/armstrong/arm_server.py":
-        content => template("arm_server.py"),
-        ensure => file,
-        require => File["/sites/armstrong"],
+    /*
+    exec { "armstrong_requirements":
+        command => "/usr/local/bin/pip install -r requirements/development.txt",
+        cwd => "/sites/armstrong",
+        require => Exec["armstrong_init"],
     }
 
-    file { "/sites/armstrong/config":
-        ensure => directory,
-        require => File["/sites/armstrong"],
+    exec { "basic_db":
+        command => [
+            "sed -i 's/backends\\./backends.sqlite3/' config/development.py",
+            "sed -i \"s/NAME': ''/NAME': 'armstrong.db'/\" config/development.py",
+        ],
+        path => "/bin",
+        cwd => "/sites/armstrong",
+        require => Exec["armstrong_init"],
     }
 
-    file { "/sites/armstrong/config/__init__.py":
-        content => template("config/__init__.py"),
-        ensure => file,
-        require => File["/sites/armstrong/config"],
+    exec { "armstrong_syncdb":
+        command => "/usr/local/bin/armstrong syncdb --noinput",
+        cwd => "/sites/armstrong",
+        require => Exec["armstrong_requirements"],
     }
-
-    file { "/sites/armstrong/config/urls.py":
-        content => template("config/urls.py"),
-        ensure => file,
-        require => File["/sites/armstrong/config"],
-    }
-    file { "/sites/armstrong/config/development.py":
-        content => template("config/development.py"),
-        ensure => file,
-        require => File["/sites/armstrong/config"],
-    }
+    */
 }
 
-class gunicorn {
-    include wsgi_config
+#include initialize_armstrong
 
-    exec{ "gunicorn":
-        command => "/usr/local/bin/gunicorn -D --bind=0.0.0.0:80 arm_server",
-        cwd => "/sites/armstrong";
+class runserver {
+
+    exec { "runserver":
+        command => "/usr/local/bin/armstrong runserver",
+        cwd => "/sites/armstrong",
     }
 }

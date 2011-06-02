@@ -47,7 +47,7 @@ Vagrant::Config.run do |config|
   #
   config.vm.provision :puppet, 
     :module_path => "puppet_modules",
-    :options => ["--templatedir=./templates/"]
+    :options => []
 
   # Enable provisioning with chef solo, specifying a cookbooks path (relative
   # to this Vagrantfile), and adding some recipes and/or roles.
