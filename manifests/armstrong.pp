@@ -18,6 +18,18 @@ class python {
 }
 class { "python": stage => "pre" }
 
+/*
+
+Currently, this does not work, but this is the general idea of how you
+would go about it.  I'm going to manually build a box and package it
+in the meantime.
+
+The problem related to [#298][] with pip.  Pip seems to behave differently
+depending on how it is run.  Until that's worked out, armstrong can't be
+installed via pip+puppet.
+
+[#298]: https://github.com/pypa/pip/issues/298
+
 exec { "armstrong":
     command => "/usr/local/bin/pip install -vvv armstrong",
     require => Exec["pip"],
@@ -37,7 +49,6 @@ class initialize_armstrong {
         require => [Package["armstrong"], File["/sites"]],
     }
 
-    /*
     exec { "armstrong_requirements":
         command => "/usr/local/bin/pip install -r requirements/development.txt",
         cwd => "/sites/armstrong",
@@ -59,15 +70,8 @@ class initialize_armstrong {
         cwd => "/sites/armstrong",
         require => Exec["armstrong_requirements"],
     }
-    */
 }
 
-#include initialize_armstrong
+include initialize_armstrong
 
-class runserver {
-
-    exec { "runserver":
-        command => "/usr/local/bin/armstrong runserver",
-        cwd => "/sites/armstrong",
-    }
-}
+*/
