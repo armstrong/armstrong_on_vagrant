@@ -16,6 +16,11 @@ DATABASES = {
     }
 }
 
+# Add in django_extensions for its runserver_plus
+INSTALLED_APPS += (
+    'django_extensions',
+)
+
 # Attempt to load any settings from config.local_development, but ignore any
 # errors complaining about them not being present.
 try:
