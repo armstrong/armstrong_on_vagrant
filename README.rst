@@ -16,7 +16,7 @@ TL;DR
 ::
 
     gem install vagrant
-    git clone git://github.com/armstrongcms/armstrong_on_vagrant.git
+    git clone git://github.com/armstrong/armstrong_on_vagrant.git
     cd armstrong_on_vagrant
     git submodule update --init
     vagrant up
